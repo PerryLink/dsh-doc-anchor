@@ -21,6 +21,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   includes the anchors and retrieval time comes from the immutable snapshot.
 - A per-call `maxAnchors` was not validated and could exceed the REP v1 cap or
   be non-positive; it is now validated and clamped to the configured cap.
+- `doc_locate` with `ignoreCase` lowercased both strings, so characters whose
+  lowercase expands (e.g. `İ`) produced offsets that did not index the original
+  text; when folding changes the length it now re-scans with a Unicode-aware
+  case-insensitive regex and reports the real match span.
 
 ## [0.1.0] - 2026-11-08
 
@@ -42,7 +46,7 @@ First release: the document → evidence step of the research plugin family.
 - Path safety (realpath + workspace containment), byte/page/character caps,
   archive rejection, and prompt-injection *flagging* (never execution).
 - Local core store fallback when `ctx.researchEvidence` is not mounted.
-- 51 tests across extraction, runtime, tool surface and package contract.
+- 52 tests across extraction, runtime, tool surface and package contract.
 
 ### Known limitations
 

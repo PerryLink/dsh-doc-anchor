@@ -212,6 +212,17 @@ describe('locate', () => {
     expect(await rt.locate({ evidenceId: result.evidenceId, query: 'METHOD', ignoreCase: true })).toHaveLength(1)
     expect(await rt.locate({ evidenceId: result.evidenceId, query: 'METHOD' })).toHaveLength(0)
   })
+
+  it('keeps Unicode case-insensitive offsets sliceable when folding changes length', async () => {
+    const rt = runtime()
+    const result = await rt.anchor({ content: 'İstanbul trial reported p = .018.', name: 'unicode.txt' })
+    const view = await rt.port().getSnapshot(result.textSnapshotId)
+    const text = Buffer.from(view!.bytes).toString('utf8')
+    const hits = await rt.locate({ textSnapshotId: result.textSnapshotId, query: 'İstanbul', ignoreCase: true })
+    expect(hits).toHaveLength(1)
+    expect(text.slice(hits[0]!.charStart, hits[0]!.charEnd)).toBe('İstanbul')
+    expect(hits[0]!.charEnd).toBeLessThanOrEqual(text.length)
+  })
 })
 
 describe('tables', () => {

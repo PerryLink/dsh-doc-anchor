@@ -187,6 +187,11 @@ function anchorsCap(requested: number | undefined, fallback: number): number {
   return Math.min(value, fallback, 500)
 }
 
+/** Escape one literal for use inside a RegExp. */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
+}
+
 /** Normalise one line of text for an anchor value/label. */
 function oneLine(text: string, max: number): string {
   const flat = text.replace(/\s+/gu, ' ').trim()
@@ -565,18 +570,46 @@ export class DocAnchorRuntime {
             .filter(anchor => anchor.kind === 'page' && anchor.charRange !== undefined)
             .map(anchor => ({ page: anchor.page ?? 0, start: anchor.charRange!.start, end: anchor.charRange!.end }))
     const hits: LocateHit[] = []
-    let from = 0
-    while (hits.length < maxResults) {
-      const index = haystack.indexOf(needle, from)
-      if (index === -1) break
+    const pushHit = (index: number, length: number, quote: string): void => {
       const page = pageRanges.find(range => index >= range.start && index < range.end)?.page
       hits.push({
         charStart: index,
-        charEnd: index + needle.length,
-        quote: text.slice(index, index + needle.length),
+        charEnd: index + length,
+        quote,
         ...(page === undefined ? {} : { page }),
       })
-      from = index + Math.max(needle.length, 1)
+    }
+    if (request.ignoreCase !== true) {
+      let from = 0
+      while (hits.length < maxResults) {
+        const index = text.indexOf(request.query, from)
+        if (index === -1) break
+        pushHit(index, request.query.length, text.slice(index, index + request.query.length))
+        from = index + Math.max(request.query.length, 1)
+      }
+      return hits
+    }
+    if (haystack.length === text.length && needle.length === request.query.length) {
+      let from = 0
+      while (hits.length < maxResults) {
+        const index = haystack.indexOf(needle, from)
+        if (index === -1) break
+        pushHit(index, needle.length, text.slice(index, index + needle.length))
+        from = index + Math.max(needle.length, 1)
+      }
+      return hits
+    }
+    // Lowercasing changed the length (e.g. `İ` → `i̇`), so offsets from the
+    // folded strings do not index the original text. Re-scan the original with
+    // the Unicode-aware case-insensitive flag and use the real match span.
+    const pattern = new RegExp(escapeRegExp(request.query), 'giu')
+    let match: RegExpExecArray | null
+    while (hits.length < maxResults && (match = pattern.exec(text)) !== null) {
+      if (match[0].length === 0) {
+        pattern.lastIndex += 1
+        continue
+      }
+      pushHit(match.index, match[0].length, match[0])
     }
     return hits
   }
