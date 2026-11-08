@@ -1,8 +1,8 @@
 {
   "name": "dsh-doc-anchor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Turn PDF / HTML / LaTeX / Markdown documents into locatable evidence surfaces for DeepSeek Harness: content-addressed snapshots of the original bytes plus the extracted text, page/section/paragraph/char anchors, table grids and a REP v1 evidence record. It does not render, read, translate or judge — it produces coordinates other plugins can cite.",
-  "author": "dsh-doc-anchor contributors",
+  "author": "PerryLink contributors",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PerryLink/dsh-doc-anchor.git"
@@ -30,7 +30,9 @@
     "CHANGELOG.md",
     "README.md",
     "README-zh.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "sideEffects": false,
   "dsh": {
