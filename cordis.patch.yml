@@ -1,0 +1,25 @@
+# dsh-doc-anchor bundle patch: mount the document anchoring tools.
+#
+# Every key below is a Config field (Schemastery schema); invalid values fail
+# the profile load loudly. Documents are read from the workspace and snapshots
+# are written under `root`, so the plugin never touches anything outside it.
+- insert:
+    - id: dsh-doc-anchor
+      name: dsh-doc-anchor
+      config:
+        # Master switch. On by default; `false` mounts no tools at all.
+        enabled: true
+        # Store/record root, resolved against the harness working directory.
+        root: .doc-anchor
+        # Hard cap on one input document (100 MiB).
+        maxBytes: 104857600
+        # PDF page cap; exceeding it fails instead of truncating.
+        maxPages: 500
+        # Extracted-character cap; exceeding it fails instead of truncating.
+        maxChars: 5000000
+        # Anchor cap per document (REP v1 caps Evidence.anchors at 500).
+        maxAnchors: 500
+        # Per-document REP records live under <root>/<recordDir>.
+        recordDir: anchors
+        # Persist snapshots + records. `false` makes doc_anchor a dry run.
+        persist: true
