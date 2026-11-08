@@ -26,6 +26,7 @@ beforeEach(async () => {
   workspace = await mkdtemp(path.join(tmpdir(), 'doc-anchor-tools-'))
   await writeFile(path.join(workspace, 'paper.md'), MARKDOWN, 'utf8')
   await writeFile(path.join(workspace, 'page.html'), HTML, 'utf8')
+  await writeFile(path.join(workspace, 'refused.docx'), 'PK', 'utf8')
 })
 
 afterEach(async () => {
@@ -100,5 +101,12 @@ describe('tool interfaces', () => {
     expect(value.ok).toBe(true)
     if (!value.ok) throw new Error('expected success')
     expect(value.tables[0]?.rows).toEqual([['Treatment', '30']])
+  })
+
+  it('doc_tables normalises an unsupported document instead of throwing', async () => {
+    const value = (await makeDocTablesTool(runtime()).execute({ path: 'refused.docx' }, EXEC)) as DocTablesValue
+    expect(value.ok).toBe(false)
+    if (value.ok) throw new Error('expected failure')
+    expect(value.error.code).toBe('UNSUPPORTED_TYPE')
   })
 })

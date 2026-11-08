@@ -178,6 +178,15 @@ function fromParseError(error: DocParseError): DocAnchorError {
   return new DocAnchorError(code, error.message)
 }
 
+/** Validate a per-call anchor cap and clamp it to the configured hard cap. */
+function anchorsCap(requested: number | undefined, fallback: number): number {
+  const value = requested ?? fallback
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new DocAnchorError('INVALID_INPUT', `maxAnchors must be a positive safe integer, got ${String(value)}`)
+  }
+  return Math.min(value, fallback, 500)
+}
+
 /** Normalise one line of text for an anchor value/label. */
 function oneLine(text: string, max: number): string {
   const flat = text.replace(/\s+/gu, ' ').trim()
@@ -228,9 +237,13 @@ export function buildAnchors(doc: ExtractedDoc, snapshotId: HashRef, maxAnchors:
     })
   }
   let paragraph = 0
+  let paragraphsDropped = false
   for (const block of doc.blocks) {
     if (block.kind !== 'paragraph' && block.kind !== 'list-item' && block.kind !== 'code') continue
-    if (anchors.length >= maxAnchors) break
+    if (anchors.length >= maxAnchors) {
+      paragraphsDropped = true
+      break
+    }
     paragraph += 1
     anchors.push({
       snapshotId,
@@ -241,7 +254,7 @@ export function buildAnchors(doc: ExtractedDoc, snapshotId: HashRef, maxAnchors:
       label: oneLine(block.text, 80),
     })
   }
-  const truncated = anchors.length > maxAnchors
+  const truncated = anchors.length > maxAnchors || paragraphsDropped
   return { anchors: truncated ? anchors.slice(0, maxAnchors) : anchors, truncated }
 }
 
@@ -388,9 +401,10 @@ export class DocAnchorRuntime {
     }
 
     const retrievedAt = this.iso()
+    const maxAnchors = anchorsCap(request.maxAnchors, this.config.maxAnchors)
     const persist = request.persist ?? this.config.persist
     if (!persist) {
-      const anchors = buildAnchors(doc, `sha256:${'0'.repeat(64)}`, request.maxAnchors ?? this.config.maxAnchors)
+      const anchors = buildAnchors(doc, `sha256:${'0'.repeat(64)}`, maxAnchors)
       return {
         ok: true,
         evidenceId: stableId('ev', ['doc-anchor', documentId, doc.text.length]),
@@ -436,24 +450,30 @@ export class DocAnchorRuntime {
       throw error
     }
 
-    const { anchors, truncated } = buildAnchors(doc, extracted.snapshot.snapshotId, request.maxAnchors ?? this.config.maxAnchors)
+    const { anchors, truncated } = buildAnchors(doc, extracted.snapshot.snapshotId, maxAnchors)
     // Plain text and Markdown often extract to their own bytes; binding the same
     // content address twice would be a duplicate-id record, so dedupe honestly.
     const snapshotIds: HashRef[] =
       original.snapshot.snapshotId === extracted.snapshot.snapshotId
         ? [original.snapshot.snapshotId]
         : [original.snapshot.snapshotId, extracted.snapshot.snapshotId]
+    // The original snapshot's capture time is immutable, so re-anchoring the
+    // same bytes dedupes instead of raising EVIDENCE_CONFLICT. The anchors are
+    // part of the identity because a different cap yields a different anchor
+    // set over the same extracted text.
+    const evidenceSourceRef = { ...sourceRef, retrievedAt: original.snapshot.capturedAt }
+    const anchorSignature = anchors.map(anchor => `${anchor.kind}:${anchor.charRange?.start ?? -1}-${anchor.charRange?.end ?? -1}`).join(',')
     const evidenceInput: AddEvidenceInput = {
-      evidenceId: stableId('ev', ['doc-anchor', documentId, extracted.snapshot.snapshotId]),
+      evidenceId: stableId('ev', ['doc-anchor', documentId, original.snapshot.snapshotId, extracted.snapshot.snapshotId, anchorSignature]),
       title: document.title,
-      sourceRef,
+      sourceRef: evidenceSourceRef,
       snapshotIds,
       anchors,
       provenance: {
         plugin: 'dsh-doc-anchor',
         version: VERSION,
         method: `extract:${document.mediaType}`,
-        retrievedAt,
+        retrievedAt: original.snapshot.capturedAt,
       },
       notes: `original bytes ${document.bytes.byteLength}B; extracted ${doc.text.length} chars; ${doc.pages.length} page(s); ${doc.tables.length} table(s)`,
     }
@@ -591,7 +611,16 @@ export class DocAnchorRuntime {
     } else {
       throw new DocAnchorError('INVALID_INPUT', 'pass exactly one of path or evidenceId')
     }
-    const resolvedMediaType = mediaType ?? detectMediaType(bytes, name)
+    let resolvedMediaType = mediaType
+    if (resolvedMediaType === undefined) {
+      try {
+        resolvedMediaType = detectMediaType(bytes, name)
+      } catch (error) {
+        // Keep the tool contract: parse failures are values, never exceptions.
+        if (error instanceof DocParseError) throw fromParseError(error)
+        throw error
+      }
+    }
     let doc: ExtractedDoc
     try {
       doc = extractDocument({ bytes, mediaType: resolvedMediaType, ...(name === undefined ? {} : { name }) }, {

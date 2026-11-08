@@ -97,12 +97,16 @@ class TextBuilder {
   /** Ensure the builder ends with at least one newline (no trailing spaces). */
   newline(): void {
     this.text = this.text.replace(/[ \t]+$/u, '')
+    // Leading newlines would be removed by trimStart(), shifting every offset
+    // recorded before that call, so an empty buffer never gains a separator.
+    if (this.text === '') return
     if (!this.text.endsWith('\n')) this.text += '\n'
   }
 
   /** Ensure a blank line separates blocks. */
   blank(): void {
     this.newline()
+    if (this.text === '') return
     if (!this.text.endsWith('\n\n')) this.text += '\n'
   }
 
@@ -275,8 +279,22 @@ export function extractHtml(input: ExtractInput): ExtractedDoc {
   builder.trimStart()
 
   const text = builder.text.replace(/\n{3,}/gu, '\n\n').replace(/\s+$/u, '\n')
-  const tableBlocks = tables.map(item => ({ kind: 'table' as const, text: text.slice(item.start, item.end), start: item.start, end: item.end }))
-  const blocks = normalizeBlocks([...headings, ...tableBlocks, ...simpleParagraphs(text)])
+  // The tail trim above can shrink the text, so every recorded end is clamped
+  // to the final text length before it is exposed as an anchor.
+  const clamp = (offset: number): number => Math.min(offset, text.length)
+  const clampBlock = (block: ExtractedBlock): ExtractedBlock => {
+    const start = clamp(block.start)
+    const end = clamp(block.end)
+    return { ...block, start, end }
+  }
+  const clampedTables = tables.map(item => ({ ...item, start: clamp(item.start), end: clamp(item.end) }))
+  const tableBlocks = clampedTables.map(item => ({
+    kind: 'table' as const,
+    text: text.slice(item.start, item.end),
+    start: item.start,
+    end: item.end,
+  }))
+  const blocks = normalizeBlocks([...headings.map(clampBlock), ...tableBlocks, ...simpleParagraphs(text)])
   const injection = detectInjection(text)
   if (text.trim() === '') warnings.push('document contains no extractable text')
 
@@ -284,7 +302,7 @@ export function extractHtml(input: ExtractInput): ExtractedDoc {
     text,
     pages: [],
     blocks,
-    tables,
+    tables: clampedTables,
     warnings: [...warnings, ...injection.map(finding => `prompt_injection_suspected: ${finding.description} (${finding.id}); treated as data`)],
     injectionSuspected: injection.length > 0,
   }

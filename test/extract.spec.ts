@@ -108,6 +108,21 @@ describe('html', () => {
   it('flags instruction-like content', () => {
     expect(doc.injectionSuspected).toBe(true)
   })
+
+  it('records heading and table offsets when the document starts with a block tag', () => {
+    // Regression: a leading block tag used to prepend blank lines that were
+    // trimmed afterwards, shifting every offset and dropping the heading.
+    const minimal = '<html><body><h1>Results</h1><p>Body.</p><table><tr><th>A</th></tr><tr><td>1</td></tr></table></body></html>'
+    const extracted = extractDocument({ bytes: Buffer.from(minimal), mediaType: 'text/html' }, CAPS)
+    const heading = extracted.blocks.find(block => block.kind === 'heading')
+    expect(heading).toBeDefined()
+    expect(extracted.text.slice(heading!.start, heading!.end)).toBe('Results')
+    const table = extracted.tables[0]
+    expect(table).toBeDefined()
+    expect(extracted.text.slice(table!.start, table!.end)).toContain('A')
+    expect(extracted.text.slice(table!.start, table!.end)).toContain('1')
+    expect(table!.end).toBeLessThanOrEqual(extracted.text.length)
+  })
 })
 
 describe('latex', () => {

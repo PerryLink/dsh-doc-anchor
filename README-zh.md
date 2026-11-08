@@ -118,7 +118,7 @@ HTML `<table>` 与 LaTeX `tabular` 结构化解析；PDF 表格返回空并附�
 
 ## 评测
 
-- **46 个测试 / 4 个文件**：抽取（文本、markdown、HTML、LaTeX、PDF 含 FlateDecode/ToUnicode/多页偏移/加密/页数上限/扫描件）、运行时（路径逃逸、符号链接逃逸、大小上限、persist=false、记录写入）、工具（schema、成功/失败渲染、locate/tables 端到端）、包契约。
+- **51 个测试 / 4 个文件**：抽取（文本、markdown、HTML、LaTeX、PDF 含 FlateDecode/ToUnicode/多页偏移/加密/页数上限/扫描件、文档以块级标签开头时的 HTML 偏移）、运行时（路径逃逸、符号链接逃逸、大小上限、persist=false、记录写入、锚点上限截断边界与校验、重复锚定不产生证据冲突）、工具（schema、成功/失败渲染、locate/tables 端到端、不支持的 `doc_tables` 输入）、包契约。
 - **合成 PDF fixture** 由测试内构建（`test/fixtures/make-pdf.ts`）—— 不提交任何受版权保护的 PDF；“真实 PDF 语料”是明示的缺口，不是已得结果。
 - 本插件**不声称 precision/recall** —— 它是基础设施。检测指标属于 `dsh-cite-verify` / `dsh-claim-check` / `dsh-statcheck`。
 

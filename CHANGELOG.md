@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- HTML extraction prepended blank lines before the first block tag and then
+  trimmed them, shifting every recorded offset; documents starting with
+  `<h1>`/`<table>` lost the heading and stored table anchors pointed at the
+  wrong text. Empty buffers no longer gain separators and ends are clamped to
+  the final text.
+- `doc_tables` let a `DocParseError` escape for an unsupported path (e.g.
+  `.docx`) instead of returning the documented `{ok:false, error:{code,message}}`.
+- `buildAnchors` reported `truncated:false` when page/section/table anchors
+  exactly filled the cap and paragraphs were dropped; the drop is now reported.
+- Re-anchoring unchanged bytes no longer fails with `STORE_ERROR`: identity
+  includes the anchors and retrieval time comes from the immutable snapshot.
+- A per-call `maxAnchors` was not validated and could exceed the REP v1 cap or
+  be non-positive; it is now validated and clamped to the configured cap.
+
 ## [0.1.0] - 2026-11-08
 
 First release: the document → evidence step of the research plugin family.
@@ -26,7 +42,7 @@ First release: the document → evidence step of the research plugin family.
 - Path safety (realpath + workspace containment), byte/page/character caps,
   archive rejection, and prompt-injection *flagging* (never execution).
 - Local core store fallback when `ctx.researchEvidence` is not mounted.
-- 46 tests across extraction, runtime, tool surface and package contract.
+- 51 tests across extraction, runtime, tool surface and package contract.
 
 ### Known limitations
 

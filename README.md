@@ -119,7 +119,7 @@ Invalid values fail loud at mount (e.g. `maxAnchors > 500`, `recordDir` containi
 
 ## Evaluation
 
-- **46 tests / 4 files**: extraction (text, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, multi-page offsets, encrypted, page cap, scans), runtime (path escapes, symlink escape, size cap, persist=false, records), tools (schemas, success/failure renders, end-to-end locate/tables), package contract.
+- **51 tests / 4 files**: extraction (text, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, multi-page offsets, encrypted, page cap, scans, HTML offsets when a document starts with a block tag), runtime (path escapes, symlink escape, size cap, persist=false, records, anchor-cap truncation boundary and validation, re-anchoring without an evidence conflict), tools (schemas, success/failure renders, end-to-end locate/tables, unsupported `doc_tables` input), package contract.
 - **Synthetic PDF fixtures** are built in tests (`test/fixtures/make-pdf.ts`) — no copyrighted PDF is committed, and "real-world PDF corpus" is an explicit gap rather than a claimed result.
 - **No precision/recall numbers** are claimed for this plugin; it is infrastructure. Detector metrics belong to `dsh-cite-verify` / `dsh-claim-check` / `dsh-statcheck`.
 

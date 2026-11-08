@@ -11,7 +11,7 @@ import path from 'node:path'
 import { validateRep } from '@perrylink/dsh-research-core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resolveConfig } from '../src/config.ts'
-import { DocAnchorError, DocAnchorRuntime } from '../src/runtime.ts'
+import { DocAnchorError, DocAnchorRuntime, buildAnchors } from '../src/runtime.ts'
 
 const AT = '2026-03-01T09:00:00.000Z'
 const MARKDOWN = [
@@ -108,11 +108,46 @@ describe('anchor', () => {
     expect(result.chars).toBeGreaterThan(0)
   })
 
+  it('re-anchors the same document without an evidence conflict', async () => {
+    const first = await runtime().anchor({ path: 'paper.md' })
+    const later = new DocAnchorRuntime({
+      config: resolveConfig({ workspaceRoot: workspace, root: path.join(workspace, '.doc-anchor') }),
+      now: () => new Date('2026-03-02T09:00:00.000Z'),
+    })
+    const again = await later.anchor({ path: 'paper.md' })
+    expect(again.evidenceId).toBe(first.evidenceId)
+    // A different anchor cap is a different anchor set, not an edit conflict.
+    const capped = await later.anchor({ path: 'paper.md', maxAnchors: 2 })
+    expect(capped.evidenceId).not.toBe(first.evidenceId)
+  })
+
   it('keeps working with persist=false but says the anchors cannot be verified', async () => {
     const result = await runtime().anchor({ path: 'paper.md', persist: false })
     expect(result.recordPath).toBeUndefined()
     expect(result.textSnapshotId).toBe(`sha256:${'0'.repeat(64)}`)
     expect(result.warnings.some(warning => warning.includes('persist=false'))).toBe(true)
+  })
+})
+
+describe('buildAnchors', () => {
+  it('reports truncation when the cap is reached before paragraphs are emitted', () => {
+    // One page + one heading already fill a cap of 2; the paragraph is dropped
+    // even though the result length equals the cap exactly.
+    const doc = {
+      text: 'Page\n\n# H\n\nBody',
+      pages: [{ page: 1, start: 0, end: 4 }],
+      blocks: [
+        { kind: 'heading' as const, text: 'H', start: 6, end: 7 },
+        { kind: 'paragraph' as const, text: 'Body', start: 9, end: 13 },
+      ],
+      tables: [],
+      warnings: [],
+      injectionSuspected: false,
+    }
+    const built = buildAnchors(doc, `sha256:${'a'.repeat(64)}`, 2)
+    expect(built.anchors).toHaveLength(2)
+    expect(built.anchors.some(anchor => anchor.kind === 'paragraph')).toBe(false)
+    expect(built.truncated).toBe(true)
   })
 })
 
@@ -149,6 +184,10 @@ describe('path safety', () => {
 
   it('requires exactly one of path or content', async () => {
     await expect(runtime().anchor({})).rejects.toBeInstanceOf(DocAnchorError)
+  })
+
+  it('rejects a non-positive per-call anchor cap', async () => {
+    await expect(runtime().anchor({ path: 'paper.md', maxAnchors: 0 })).rejects.toMatchObject({ code: 'INVALID_INPUT' })
   })
 })
 
