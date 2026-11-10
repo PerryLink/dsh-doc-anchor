@@ -23,7 +23,7 @@
 
 ## 它不做什么
 
-- **不做 OCR。** 扫描版 PDF 会以明确的 `parse_failed` 失败；v0.1 绝不从像素猜测文字。
+- **不内置 OCR。** 扫描版 PDF 默认以明确的 `parse_failed` 失败；可选外部后端（`pdf.backend: pdftotext | command`）可以跑调用方提供的抽取器，但不捆绑任何二进制，失败仍然显式。
 - **不重建 PDF 表格。** `doc_tables` 会直说做不到，而不是凭空编造一张表格。
 - **不渲染、不阅读、不翻译，也不总结。** 抽取文本就是原始文本层，只对空白做规范化处理。
 - **不执行文档。** `<script>`/`<style>` 会被丢弃，LaTeX 宏永不展开，`\input` 指向的文件不会被跟进。
@@ -95,6 +95,9 @@ HTML 的 `<table>` 与 LaTeX 的 `tabular` 会被结构化解析；PDF 表格则
 | `maxPages` | `500` | PDF 页数上限 —— 超出即失败，绝不截断 |
 | `maxChars` | `5000000` | 抽取字符数上限 —— 超出即失败 |
 | `maxAnchors` | `500` | 单文档锚点上限（schema 硬上限 500） |
+| `pdf.backend` | `builtin` | `builtin`（文本层）、`pdftotext`、`command`（外部，经 `ctx.subprocess`） |
+| `pdf.command` | — | `command` 的 argv，必须含 `{input}`（不走 shell） |
+| `pdf.timeoutMs` / `pdf.maxOutputBytes` | `30000` / `20971520` | 外部调用上限 |
 | `recordDir` | `anchors` | 每份文档的 REP 记录目录（位于 `<root>` 下） |
 | `persist` | `true` | 写入快照与记录 |
 
@@ -110,7 +113,7 @@ HTML 的 `<table>` 与 LaTeX 的 `tabular` 会被结构化解析；PDF 表格则
 
 ## 已知限制（v0.1）
 
-- **扫描版 PDF** 没有文本层 → `PARSE_FAILED`。OCR 计划作为可选的外部后端提供，永不内置。
+- **扫描版 PDF** 没有文本层 → 内置后端下 `PARSE_FAILED`。可选外部后端是显式逃生门；永不捆绑，失败会报告而不是静默降级。
 - **缺少 `ToUnicode` 的 CID 字体** 会渲染成替换字符；每页都会产生一条警告。
 - **PDF 表格** 不做重建。
 - **HTML** 采用标签扫描，而不是完整的 HTML5 解析器；畸形标记会优雅降级，但可能丢失嵌套结构。

@@ -23,3 +23,9 @@
         recordDir: anchors
         # Persist snapshots + records. `false` makes doc_anchor a dry run.
         persist: true
+        # Optional external PDF text extraction (off by default; nothing bundled).
+        pdf:
+          backend: builtin
+          # command: ocr-tool --file {input}
+          timeoutMs: 30000
+          maxOutputBytes: 20971520

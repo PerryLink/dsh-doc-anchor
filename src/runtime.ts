@@ -27,6 +27,7 @@ import {
 } from '@perrylink/dsh-research-core'
 import type { ResolvedConfig } from './config.ts'
 import { detectMediaType, extractDocument, DocParseError } from './extract/index.ts'
+import { extractPdfWithCommand, type SubprocessSeam } from './extract/pdf-command.ts'
 import type { ExtractedDoc, ExtractedTable } from './extract/types.ts'
 import { VERSION } from './version.ts'
 
@@ -158,6 +159,8 @@ export interface DocAnchorRuntimeOptions {
   readonly service?: EvidencePort
   /** Clock override for tests. */
   readonly now?: () => Date
+  /** The host subprocess seam (required only for external PDF backends). */
+  readonly subprocess?: SubprocessSeam
 }
 
 /** True when `candidate` is inside `root` (or equal to it). */
@@ -269,12 +272,14 @@ export class DocAnchorRuntime {
 
   readonly #service: EvidencePort | undefined
   readonly #now: () => Date
+  readonly #subprocess: SubprocessSeam | undefined
   #store: EvidenceStore | undefined
 
   constructor(options: DocAnchorRuntimeOptions) {
     this.config = options.config
     this.#service = options.service
     this.#now = options.now ?? (() => new Date())
+    this.#subprocess = options.subprocess
   }
 
   /** The evidence port (mounted service, else a local core store). */
@@ -396,10 +401,22 @@ export class DocAnchorRuntime {
     const document = await this.readDocument(request, absolutePath ?? documentId)
     let doc: ExtractedDoc
     try {
-      doc = extractDocument({ bytes: document.bytes, mediaType: document.mediaType, ...(document.name === undefined ? {} : { name: document.name }) }, {
-        maxPages: this.config.maxPages,
-        maxChars: this.config.maxChars,
-      })
+      if (document.mediaType === 'application/pdf' && this.config.pdf.backend !== 'builtin') {
+        if (this.#subprocess === undefined) {
+          throw new DocParseError('parse_failed', `pdf.backend=${this.config.pdf.backend} requires ctx.subprocess, which is not mounted`)
+        }
+        doc = await extractPdfWithCommand(document.bytes, {
+          backend: this.config.pdf.backend,
+          ...(this.config.pdf.command === undefined ? {} : { command: this.config.pdf.command }),
+          timeoutMs: this.config.pdf.timeoutMs,
+          maxOutputBytes: this.config.pdf.maxOutputBytes,
+        }, this.#subprocess)
+      } else {
+        doc = extractDocument({ bytes: document.bytes, mediaType: document.mediaType, ...(document.name === undefined ? {} : { name: document.name }) }, {
+          maxPages: this.config.maxPages,
+          maxChars: this.config.maxChars,
+        })
+      }
     } catch (error) {
       if (error instanceof DocParseError) throw fromParseError(error)
       throw error

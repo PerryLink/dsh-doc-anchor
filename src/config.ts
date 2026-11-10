@@ -9,6 +9,21 @@
 import path from 'node:path'
 import z from '@deepseek-ai/schemastery'
 
+/** PDF text backends: built-in parser, `pdftotext`, or a custom command. */
+export type PdfBackend = 'builtin' | 'pdftotext' | 'command'
+
+/** Optional external PDF text extraction. */
+export interface PdfConfig {
+  /** `builtin` (default) walks the text layer; `pdftotext` / `command` shell out. */
+  backend?: PdfBackend
+  /** Command line for `command`; must contain `{input}` (space-separated, no shell). */
+  command?: string
+  /** Timeout for one external invocation (ms). */
+  timeoutMs?: number
+  /** Max bytes of external stdout before the run fails. */
+  maxOutputBytes?: number
+}
+
 /** Raw plugin config — every field optional. */
 export interface Config {
   /** Master switch. `false` mounts no service and no tools. */
@@ -29,6 +44,8 @@ export interface Config {
   recordDir?: string
   /** Persist snapshots + a REP record (default true). */
   persist?: boolean
+  /** External PDF text extraction (off by default; never bundled). */
+  pdf?: PdfConfig
 }
 
 /** Fully resolved config. */
@@ -42,6 +59,12 @@ export interface ResolvedConfig {
   readonly maxAnchors: number
   readonly recordDir: string
   readonly persist: boolean
+  readonly pdf: {
+    readonly backend: PdfBackend
+    readonly command?: string
+    readonly timeoutMs: number
+    readonly maxOutputBytes: number
+  }
 }
 
 /** Schemastery schema: the loader validates and fills defaults before `apply`. */
@@ -55,6 +78,12 @@ export const Config: z<Config> = z.object({
   maxAnchors: z.number().default(500),
   recordDir: z.string().default('anchors'),
   persist: z.boolean().default(true),
+  pdf: z.object({
+    backend: z.union([z.const('builtin'), z.const('pdftotext'), z.const('command')]).default('builtin'),
+    command: z.string(),
+    timeoutMs: z.number().default(30_000),
+    maxOutputBytes: z.number().default(20 * 1024 * 1024),
+  }).default({ backend: 'builtin', command: '', timeoutMs: 30_000, maxOutputBytes: 20 * 1024 * 1024 }),
 })
 
 /** Throw unless the value is a positive safe integer. */
@@ -88,6 +117,21 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     // produce records that cannot validate.
     throw new TypeError('maxAnchors must be <= 500 (REP v1 Evidence.anchors cap)')
   }
+  const pdfConfig = config.pdf ?? {}
+  const backend = pdfConfig.backend ?? 'builtin'
+  if (backend !== 'builtin' && backend !== 'pdftotext' && backend !== 'command') {
+    throw new TypeError(`pdf.backend must be builtin|pdftotext|command, got ${JSON.stringify(backend)}`)
+  }
+  const pdfCommand = pdfConfig.command?.trim()
+  if (backend === 'command') {
+    if (pdfCommand === undefined || pdfCommand === '') throw new TypeError('pdf.command is required when pdf.backend=command')
+    if (!pdfCommand.includes('{input}')) throw new TypeError('pdf.command must contain the {input} placeholder')
+  }
+  const pdfTimeoutMs = pdfConfig.timeoutMs ?? 30_000
+  const pdfMaxOutputBytes = pdfConfig.maxOutputBytes ?? 20 * 1024 * 1024
+  for (const [name, value] of Object.entries({ pdfTimeoutMs, pdfMaxOutputBytes })) {
+    assertPositiveInt(name, value)
+  }
   return {
     enabled: config.enabled ?? true,
     root: path.resolve(root),
@@ -98,5 +142,11 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     maxAnchors,
     recordDir,
     persist: config.persist ?? true,
+    pdf: {
+      backend,
+      ...(pdfCommand === undefined || pdfCommand === '' ? {} : { command: pdfCommand }),
+      timeoutMs: pdfTimeoutMs,
+      maxOutputBytes: pdfMaxOutputBytes,
+    },
   }
 }

@@ -23,7 +23,7 @@ English · [简体中文](README-zh.md)
 
 ## What it does not do
 
-- **No OCR.** A scanned PDF fails with an explicit `parse_failed`; v0.1 never guesses text from pixels.
+- **No bundled OCR.** A scanned PDF fails with an explicit `parse_failed`; an optional external backend (`pdf.backend: pdftotext | command`) can run a caller-provided extractor, but no binary is bundled and failures stay loud.
 - **No PDF table reconstruction.** `doc_tables` says so instead of inventing a grid.
 - **No rendering, reading, translating or summarising.** Extracted text is the raw text layer, normalized only in whitespace.
 - **No document execution.** `<script>`/`<style>` are dropped, LaTeX macros are never expanded, `\input` files are not followed.
@@ -95,6 +95,9 @@ Every failure is a normalised `{ ok: false, error: { code, message } }` — no e
 | `maxPages` | `500` | PDF page cap — exceeding fails, never truncates |
 | `maxChars` | `5000000` | extracted-character cap — exceeding fails |
 | `maxAnchors` | `500` | per-document anchor cap (schema hard cap 500) |
+| `pdf.backend` | `builtin` | `builtin` (text layer), `pdftotext`, or `command` (external, via `ctx.subprocess`) |
+| `pdf.command` | — | argv for `command`; must contain `{input}` (no shell) |
+| `pdf.timeoutMs` / `pdf.maxOutputBytes` | `30000` / `20971520` | external invocation caps |
 | `recordDir` | `anchors` | per-document REP records under `<root>` |
 | `persist` | `true` | write snapshots + records |
 
@@ -110,7 +113,7 @@ Invalid values fail loud at mount (e.g. `maxAnchors > 500`, `recordDir` containi
 
 ## Known limitations (v0.1)
 
-- **Scanned PDFs** have no text layer → `PARSE_FAILED`. OCR is planned as an optional external backend, never bundled.
+- **Scanned PDFs** have no text layer → `PARSE_FAILED` with the built-in backend. The optional external backend is the explicit escape hatch; it is never bundled and its failures are reported, not silently degraded.
 - **CID fonts without `ToUnicode`** render as replacement characters; a warning is emitted per page.
 - **PDF tables** are not reconstructed.
 - **HTML** is tag-scanned, not a full HTML5 parser; malformed markup degrades gracefully but may lose nested structure.
