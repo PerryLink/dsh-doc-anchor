@@ -10,7 +10,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Real-backend verification for the external PDF path: poppler `pdftotext` 24.02.0
   on Ubuntu 24.04, both backends, a two-page synthetic PDF → page anchors
-  `p.1`/`p.2` (3 integration tests, skipped when the binary is absent).
+  `p.1`/`p.2` (5 integration tests, skipped when the binary is absent).
 - Optional external PDF text backend: `pdf.backend: pdftotext | command`
   (default `builtin`). Runs one bounded argv command through `ctx.subprocess`,
   writes the already-read bytes to a private temp file, splits stdout on form

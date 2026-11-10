@@ -114,7 +114,7 @@ Invalid values fail loud at mount (e.g. `maxAnchors > 500`, `recordDir` containi
 ## Known limitations (v0.1)
 
 - **Scanned PDFs** have no text layer → `PARSE_FAILED` with the built-in backend. The optional external backend is the explicit escape hatch; it is never bundled and its failures are reported, not silently degraded.
-- **Verified:** 2026-11-10, poppler `pdftotext` 24.02.0 on Ubuntu 24.04, both `pdftotext` and `command` backends, a two-page synthetic PDF → `p.1`/`p.2` page anchors. OCR itself was not tested (no OCR binary was installed; none is bundled).
+- **Verified:** 2026-11-10, poppler `pdftotext` 24.02.0 on Ubuntu 24.04, both `pdftotext` and `command` backends, a two-page synthetic PDF → `p.1`/`p.2` page anchors, and a no-text PDF fails closed. OCR itself was not tested (no OCR binary was installed; none is bundled).
 - **CID fonts without `ToUnicode`** render as replacement characters; a warning is emitted per page.
 - **PDF tables** are not reconstructed.
 - **HTML** is tag-scanned, not a full HTML5 parser; malformed markup degrades gracefully but may lose nested structure.

@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resolveConfig } from '../src/config.ts'
 import { extractPdfWithCommand, type SubprocessSeam } from '../src/extract/pdf-command.ts'
+import { DocParseError } from '../src/extract/types.ts'
 import { DocAnchorRuntime } from '../src/runtime.ts'
 
 const FIXTURE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures', 'two-pages.pdf')
@@ -78,6 +79,23 @@ describe.skipIf(!HAS_PDFTOTEXT)('real pdftotext backend', () => {
     }, realSeam())
     expect(doc.pages).toHaveLength(2)
     expect(doc.warnings[0]).toContain('an external command')
+  })
+
+  it('fails closed when the real binary rejects a malformed PDF', async () => {
+    await expect(extractPdfWithCommand(Buffer.from('%PDF-1.4\nthis is not a real pdf'), {
+      backend: 'pdftotext',
+      timeoutMs: 20_000,
+      maxOutputBytes: 1024 * 1024,
+    }, realSeam())).rejects.toBeInstanceOf(DocParseError)
+  })
+
+  it('fails closed on a PDF with no text layer (the scanned-PDF case)', async () => {
+    const bytes = await readFile(path.join(path.dirname(FIXTURE), 'no-text.pdf'))
+    await expect(extractPdfWithCommand(bytes, {
+      backend: 'pdftotext',
+      timeoutMs: 20_000,
+      maxOutputBytes: 1024 * 1024,
+    }, realSeam())).rejects.toMatchObject({ code: 'empty_document' })
   })
 
   it('anchors pages through the runtime with a real subprocess', async () => {
