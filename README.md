@@ -145,7 +145,7 @@ Invalid values fail loud at mount (e.g. `maxAnchors > 500`, `recordDir` containi
 *Animated: the real `pnpm test` run in this checkout (re-run 2026-11-21). The five external-`pdftotext` integration tests are skipped because that binary is not installed here; the built-in path is what the rest of the suite covers.*
 
 
-- **52 tests / 4 files**: extraction (text, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, multi-page offsets, encrypted, page cap, scans, HTML offsets when a document starts with a block tag), runtime (path escapes, symlink escape, size cap, persist=false, records, anchor-cap truncation boundary and validation, re-anchoring without an evidence conflict, Unicode case-insensitive locate offsets), tools (schemas, success/failure renders, end-to-end locate/tables, unsupported `doc_tables` input), package contract.
+- **59 tests / 6 files**: extraction (text, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, multi-page offsets, encrypted, page cap, scans, HTML offsets when a document starts with a block tag), runtime (path escapes, symlink escape, size cap, persist=false, records, anchor-cap truncation boundary and validation, re-anchoring without an evidence conflict, Unicode case-insensitive locate offsets), tools (schemas, success/failure renders, end-to-end locate/tables, unsupported `doc_tables` input), package contract.
 - **Synthetic PDF fixtures** are built in tests (`test/fixtures/make-pdf.ts`) — no copyrighted PDF is committed, and "real-world PDF corpus" is an explicit gap rather than a claimed result.
 - **No precision/recall numbers** are claimed for this plugin; it is infrastructure. Detector metrics belong to `dsh-cite-verify` / `dsh-claim-check` / `dsh-statcheck`.
 

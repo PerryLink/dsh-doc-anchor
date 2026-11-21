@@ -145,7 +145,7 @@ HTML 的 `<table>` 与 LaTeX 的 `tabular` 会被结构化解析；PDF 表格则
 *动图是本检出里 `pnpm test` 的真实输出（2026-11-21 复跑）。5 项外部 `pdftotext` 集成测试因本机未安装该二进制而跳过；其余用例覆盖的是内置路径。*
 
 
-- **52 个测试 / 4 个文件**：抽取（文本、markdown、HTML、LaTeX、PDF，含 FlateDecode、ToUnicode CMap、多页偏移、加密、页数上限、扫描件，以及文档以块级标签开头时的 HTML 偏移）、运行时（路径逃逸、符号链接逃逸、大小上限、persist=false、记录写入、锚点上限的截断边界与校验、不产生证据冲突的重复锚定、Unicode 大小写不敏感的 locate 偏移）、工具（schema、成功/失败渲染、locate 与 tables 端到端、不支持的 `doc_tables` 输入）、包契约。
+- **59 个测试 / 6 个文件**：抽取（文本、markdown、HTML、LaTeX、PDF，含 FlateDecode、ToUnicode CMap、多页偏移、加密、页数上限、扫描件，以及文档以块级标签开头时的 HTML 偏移）、运行时（路径逃逸、符号链接逃逸、大小上限、persist=false、记录写入、锚点上限的截断边界与校验、不产生证据冲突的重复锚定、Unicode 大小写不敏感的 locate 偏移）、工具（schema、成功/失败渲染、locate 与 tables 端到端、不支持的 `doc_tables` 输入）、包契约。
 - **合成 PDF fixture** 在测试中构建（`test/fixtures/make-pdf.ts`）—— 仓库不提交任何受版权保护的 PDF；“真实世界 PDF 语料”是一个明示的缺口，而不是被声称的结果。
 - 本插件**不声称 precision / recall 数字**；它是基础设施。检测器指标属于 `dsh-cite-verify` / `dsh-claim-check` / `dsh-statcheck`。
 
