@@ -1,14 +1,23 @@
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-hero-zh-dark.webp">
+  <img src="docs/assets/dsh-doc-anchor-hero-zh-light.webp" width="100%" alt="dsh-doc-anchor 配图：在本仓 two-pages.pdf 夹具上的真实运行 —— 页锚点 p.1 为字符 0–36、p.2 为 38–74，查询 fatigue 定位到第 2 页字符 53–60；右侧是两份不可变快照与 REP v1 证据记录">
+</picture>
+
 # dsh-doc-anchor
 
 **把 PDF / HTML / LaTeX / Markdown 文档变成 DeepSeek Harness 里可定位的证据。**
 
 *它不做阅读器，不做渲染，也不做翻译 —— 只提供坐标、不可变快照，以及一份任何人都能复核的证据记录。*
 
+[English](README.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
+
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24.9-brightgreen.svg)]()
 [![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
 
-[English](README.md) · 简体中文
+</div>
 
 ---
 
@@ -20,6 +29,14 @@
 - 对抽取文本提供这些定位方式：**页码区间**（PDF）、**章节**（标题）、**表格**、**段落**，以及精确的字符偏移。
 - 生成一条 **REP v1 证据记录**（`@perrylink/dsh-research-core`），使 `claim-check`、`cite-verify`、`statcheck` 与 `research-report` 能够在不信任摘要的前提下引用该文档。
 - 可选的辅助工具：`doc_locate`（查找逐字引文）与 `doc_tables`（读回表格网格）。
+
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-flow-v5-dark.svg">
+  <img src="docs/assets/dsh-doc-anchor-flow-v5-light.svg" width="100%" alt="dsh-doc-anchor 结构图：PDF / HTML / LaTeX / Markdown 文档先抽取成文本与块，再落成带精确字符偏移的页码、章节、表格、段落锚点，最后封存为一条 REP v1 证据记录，由 doc_locate 与 doc_tables 回读快照">
+</picture>
+
+*结构：抽取 → 锚定 → 记录；`doc_anchor` 返回定位器，`doc_locate` 与 `doc_tables` 回读已存的快照。图内只有抽取器、运行时与工具的真实名称，五语共用同一张结构图。*
 
 ## 它不做什么
 
@@ -122,6 +139,11 @@ HTML 的 `<table>` 与 LaTeX 的 `tabular` 会被结构化解析；PDF 表格则
 - **`.docx` / 归档文件** 按设计拒绝。
 
 ## 评测
+
+![dsh-doc-anchor 评测：本检出里的真实测试运行 —— 抽取、运行时、工具面与包契约共 59 项通过，5 项外部 pdftotext 集成测试因本机未装该二进制而跳过](docs/assets/dsh-doc-anchor-demo.gif)
+
+*动图是本检出里 `pnpm test` 的真实输出（2026-11-21 复跑）。5 项外部 `pdftotext` 集成测试因本机未安装该二进制而跳过；其余用例覆盖的是内置路径。*
+
 
 - **52 个测试 / 4 个文件**：抽取（文本、markdown、HTML、LaTeX、PDF，含 FlateDecode、ToUnicode CMap、多页偏移、加密、页数上限、扫描件，以及文档以块级标签开头时的 HTML 偏移）、运行时（路径逃逸、符号链接逃逸、大小上限、persist=false、记录写入、锚点上限的截断边界与校验、不产生证据冲突的重复锚定、Unicode 大小写不敏感的 locate 偏移）、工具（schema、成功/失败渲染、locate 与 tables 端到端、不支持的 `doc_tables` 输入）、包契约。
 - **合成 PDF fixture** 在测试中构建（`test/fixtures/make-pdf.ts`）—— 仓库不提交任何受版权保护的 PDF；“真实世界 PDF 语料”是一个明示的缺口，而不是被声称的结果。

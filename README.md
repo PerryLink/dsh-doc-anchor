@@ -1,14 +1,23 @@
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-hero-en-dark.webp">
+  <img src="docs/assets/dsh-doc-anchor-hero-en-light.webp" width="100%" alt="dsh-doc-anchor: a real run on the committed two-pages.pdf fixture — page anchors p.1 0–36 and p.2 38–74, a locate hit for the word fatigue mapped to page 2 at chars 53–60, plus the two immutable snapshots and the REP v1 evidence record">
+</picture>
+
 # dsh-doc-anchor
 
 **Turn PDF / HTML / LaTeX / Markdown documents into locatable evidence surfaces for DeepSeek Harness.**
 
 *No reader, no renderer, no translation — just coordinates, immutable snapshots, and an evidence record anyone can re-check.*
 
+[简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
+
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24.9-brightgreen.svg)]()
 [![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
 
-English · [简体中文](README-zh.md)
+</div>
 
 ---
 
@@ -20,6 +29,14 @@ English · [简体中文](README-zh.md)
 - Locators into the extracted text: **page ranges** (PDF), **sections** (headings), **tables**, **paragraphs**, plus exact char offsets.
 - A **REP v1 evidence record** (`@perrylink/dsh-research-core`) so `claim-check`, `cite-verify`, `statcheck` and `research-report` can cite the document without trusting a summary.
 - Optional helpers: `doc_locate` (find a verbatim quote), `doc_tables` (read table grids back).
+
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-flow-v5-dark.svg">
+  <img src="docs/assets/dsh-doc-anchor-flow-v5-light.svg" width="100%" alt="dsh-doc-anchor structure: a PDF, HTML, LaTeX or Markdown document is extracted into text and blocks, anchored as page, section, table and paragraph locators with exact character offsets, and sealed into a REP v1 evidence record whose snapshots doc_locate and doc_tables read back">
+</picture>
+
+*Structure: extract → anchor → record; `doc_anchor` returns the locators, and `doc_locate` / `doc_tables` read the stored snapshots back. The token labels inside the diagram are the real extractor, runtime and tool names, so the same picture serves all five languages.*
 
 ## What it does not do
 
@@ -122,6 +139,11 @@ Invalid values fail loud at mount (e.g. `maxAnchors > 500`, `recordDir` containi
 - **`.docx` / archives** are rejected by design.
 
 ## Evaluation
+
+![dsh-doc-anchor evaluation: the real test suite in this checkout — 59 tests passed across extraction, runtime, tool surface and package contract, with the five external pdftotext integration tests skipped](docs/assets/dsh-doc-anchor-demo.gif)
+
+*Animated: the real `pnpm test` run in this checkout (re-run 2026-11-21). The five external-`pdftotext` integration tests are skipped because that binary is not installed here; the built-in path is what the rest of the suite covers.*
+
 
 - **52 tests / 4 files**: extraction (text, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, multi-page offsets, encrypted, page cap, scans, HTML offsets when a document starts with a block tag), runtime (path escapes, symlink escape, size cap, persist=false, records, anchor-cap truncation boundary and validation, re-anchoring without an evidence conflict, Unicode case-insensitive locate offsets), tools (schemas, success/failure renders, end-to-end locate/tables, unsupported `doc_tables` input), package contract.
 - **Synthetic PDF fixtures** are built in tests (`test/fixtures/make-pdf.ts`) — no copyrighted PDF is committed, and "real-world PDF corpus" is an explicit gap rather than a claimed result.
