@@ -13,26 +13,36 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        if: ${{ hashFiles('pnpm-lock.yaml') != '' }}
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - name: Checkout dsh-research-core (shared REP peer)
+        uses: actions/checkout@v7
         with:
-          node-version: 24
-      - name: Install
+          repository: PerryLink/dsh-research-core
+          path: .ci/dsh-research-core
+      - name: Point the dev dependency at the checkout
         shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm install --no-frozen-lockfile
-          elif [ -f package-lock.json ]; then npm ci
-          else npm install --no-audit --no-fund
-          fi
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.devDependencies['@perrylink/dsh-research-core']='file:.ci/dsh-research-core';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.16.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Build the shared core checkout
+        shell: bash
+        run: |
+          pnpm --dir .ci/dsh-research-core install --no-frozen-lockfile
+          pnpm --dir .ci/dsh-research-core run build
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
       - name: Gate
         shell: bash
         run: |
-          npm run build --if-present
-          npm run typecheck --if-present
-          npm run verify:package --if-present
-          npm test --if-present
+          pnpm run build --if-present
+          pnpm run typecheck
+          pnpm test
       - name: Publish to npm
         shell: bash
         run: |

@@ -49,7 +49,7 @@
 
 | | |
 |---|---|
-| DeepSeek Harness | **`dsh-v0.2.6-alpha.1`** (verificado el 2026-11-22); línea peer `>=0.2.6-0 <0.3.0 \|\| >=0.2.6-0 <0.3.0` |
+| DeepSeek Harness | **`dsh-v0.2.7-alpha.1`** (verificado el 2026-11-22); línea peer `>=0.2.7-0 <0.3.0 \|\| >=0.2.7-0 <0.3.0` |
 | Node | `^22.19.0 \|\| >=24.9.0` (probado en `24.22.1`), solo ESM |
 | Peers | `@perrylink/dsh-research-core ^0.1.0` (protocolo compartido), `@deepseek-ai/cordis ^4.0.5-alpha.1`, `@deepseek-ai/dsh-tools`, `@deepseek-ai/schemastery ^3.18.5-alpha.1` |
 | Dependencias de runtime | **cero** |
