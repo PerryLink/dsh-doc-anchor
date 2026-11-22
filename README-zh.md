@@ -30,7 +30,6 @@
 - 生成一条 **REP v1 证据记录**（`@perrylink/dsh-research-core`），使 `claim-check`、`cite-verify`、`statcheck` 与 `research-report` 能够在不信任摘要的前提下引用该文档。
 - 可选的辅助工具：`doc_locate`（查找逐字引文）与 `doc_tables`（读回表格网格）。
 
-
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-flow-v5-dark.svg">
   <img src="docs/assets/dsh-doc-anchor-flow-v5-light.svg" width="100%" alt="dsh-doc-anchor 结构图：PDF / HTML / LaTeX / Markdown 文档先抽取成文本与块，再落成带精确字符偏移的页码、章节、表格、段落锚点，最后封存为一条 REP v1 证据记录，由 doc_locate 与 doc_tables 回读快照">
@@ -50,7 +49,7 @@
 
 | | |
 |---|---|
-| DeepSeek Harness | **`dsh-v0.2.2-rc.4`**（2026-11-18 实测）；peer 区间 `>=0.2.1-0 <0.3.0 \|\| >=0.2.2-0 <0.3.0` |
+| DeepSeek Harness | **`dsh-v0.2.3-alpha.1`**（2026-11-22 实测）；peer 区间 `>=0.2.1-0 <0.3.0 \|\| >=0.2.2-0 <0.3.0` |
 | Node | `^22.19.0 \|\| >=24.9.0`（实测 `24.22.1`），仅 ESM |
 | Peer | `@perrylink/dsh-research-core ^0.1.0`（共享协议）、`@deepseek-ai/cordis ^4.0.5-alpha.1`、`@deepseek-ai/dsh-tools`、`@deepseek-ai/schemastery ^3.18.5-alpha.1` |
 | 运行时依赖 | **零** |
@@ -143,7 +142,6 @@ HTML 的 `<table>` 与 LaTeX 的 `tabular` 会被结构化解析；PDF 表格则
 ![dsh-doc-anchor 评测：本检出里的真实测试运行 —— 抽取、运行时、工具面与包契约共 59 项通过，5 项外部 pdftotext 集成测试因本机未装该二进制而跳过](docs/assets/dsh-doc-anchor-demo.gif)
 
 *动图是本检出里 `pnpm test` 的真实输出（2026-11-21 复跑）。5 项外部 `pdftotext` 集成测试因本机未安装该二进制而跳过；其余用例覆盖的是内置路径。*
-
 
 - **59 个测试 / 6 个文件**：抽取（文本、markdown、HTML、LaTeX、PDF，含 FlateDecode、ToUnicode CMap、多页偏移、加密、页数上限、扫描件，以及文档以块级标签开头时的 HTML 偏移）、运行时（路径逃逸、符号链接逃逸、大小上限、persist=false、记录写入、锚点上限的截断边界与校验、不产生证据冲突的重复锚定、Unicode 大小写不敏感的 locate 偏移）、工具（schema、成功/失败渲染、locate 与 tables 端到端、不支持的 `doc_tables` 输入）、包契约。
 - **合成 PDF fixture** 在测试中构建（`test/fixtures/make-pdf.ts`）—— 仓库不提交任何受版权保护的 PDF；“真实世界 PDF 语料”是一个明示的缺口，而不是被声称的结果。

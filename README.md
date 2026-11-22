@@ -30,7 +30,6 @@
 - A **REP v1 evidence record** (`@perrylink/dsh-research-core`) so `claim-check`, `cite-verify`, `statcheck` and `research-report` can cite the document without trusting a summary.
 - Optional helpers: `doc_locate` (find a verbatim quote), `doc_tables` (read table grids back).
 
-
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-flow-v5-dark.svg">
   <img src="docs/assets/dsh-doc-anchor-flow-v5-light.svg" width="100%" alt="dsh-doc-anchor structure: a PDF, HTML, LaTeX or Markdown document is extracted into text and blocks, anchored as page, section, table and paragraph locators with exact character offsets, and sealed into a REP v1 evidence record whose snapshots doc_locate and doc_tables read back">
@@ -50,7 +49,7 @@
 
 | | |
 |---|---|
-| DeepSeek Harness | **`dsh-v0.2.2-rc.4`** (verified 2026-11-18); peer line `>=0.2.1-0 <0.3.0 \|\| >=0.2.2-0 <0.3.0` |
+| DeepSeek Harness | **`dsh-v0.2.3-alpha.1`** (verified 2026-11-22); peer line `>=0.2.1-0 <0.3.0 \|\| >=0.2.2-0 <0.3.0` |
 | Node | `^22.19.0 \|\| >=24.9.0` (tested on `24.22.1`), ESM only |
 | Peers | `@perrylink/dsh-research-core ^0.1.0` (shared protocol), `@deepseek-ai/cordis ^4.0.5-alpha.1`, `@deepseek-ai/dsh-tools`, `@deepseek-ai/schemastery ^3.18.5-alpha.1` |
 | Runtime dependencies | **zero** |
@@ -143,7 +142,6 @@ Invalid values fail loud at mount (e.g. `maxAnchors > 500`, `recordDir` containi
 ![dsh-doc-anchor evaluation: the real test suite in this checkout — 59 tests passed across extraction, runtime, tool surface and package contract, with the five external pdftotext integration tests skipped](docs/assets/dsh-doc-anchor-demo.gif)
 
 *Animated: the real `pnpm test` run in this checkout (re-run 2026-11-21). The five external-`pdftotext` integration tests are skipped because that binary is not installed here; the built-in path is what the rest of the suite covers.*
-
 
 - **59 tests / 6 files**: extraction (text, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, multi-page offsets, encrypted, page cap, scans, HTML offsets when a document starts with a block tag), runtime (path escapes, symlink escape, size cap, persist=false, records, anchor-cap truncation boundary and validation, re-anchoring without an evidence conflict, Unicode case-insensitive locate offsets), tools (schemas, success/failure renders, end-to-end locate/tables, unsupported `doc_tables` input), package contract.
 - **Synthetic PDF fixtures** are built in tests (`test/fixtures/make-pdf.ts`) — no copyrighted PDF is committed, and "real-world PDF corpus" is an explicit gap rather than a claimed result.

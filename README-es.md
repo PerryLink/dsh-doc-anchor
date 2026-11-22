@@ -30,7 +30,6 @@
 - Un **registro de evidencia REP v1** (`@perrylink/dsh-research-core`) para que `claim-check`, `cite-verify`, `statcheck` y `research-report` puedan citar el documento sin confiar en un resumen.
 - Ayudantes opcionales: `doc_locate` (encontrar una cita literal) y `doc_tables` (leer las rejillas de tabla de vuelta).
 
-
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dsh-doc-anchor-flow-v5-dark.svg">
   <img src="docs/assets/dsh-doc-anchor-flow-v5-light.svg" width="100%" alt="dsh-doc-anchor estructura: un documento PDF, HTML, LaTeX o Markdown se extrae en texto y bloques, se ancla como localizadores de página, sección, tabla y párrafo con offsets de carácter exactos, y se sella en un registro de evidencia REP v1 cuyos snapshots doc_locate y doc_tables leen de vuelta">
@@ -50,7 +49,7 @@
 
 | | |
 |---|---|
-| DeepSeek Harness | **`dsh-v0.2.2-rc.4`** (verificado el 2026-11-18); línea peer `>=0.2.1-0 <0.3.0 \|\| >=0.2.2-0 <0.3.0` |
+| DeepSeek Harness | **`dsh-v0.2.3-alpha.1`** (verificado el 2026-11-22); línea peer `>=0.2.1-0 <0.3.0 \|\| >=0.2.2-0 <0.3.0` |
 | Node | `^22.19.0 \|\| >=24.9.0` (probado en `24.22.1`), solo ESM |
 | Peers | `@perrylink/dsh-research-core ^0.1.0` (protocolo compartido), `@deepseek-ai/cordis ^4.0.5-alpha.1`, `@deepseek-ai/dsh-tools`, `@deepseek-ai/schemastery ^3.18.5-alpha.1` |
 | Dependencias de runtime | **cero** |
@@ -143,7 +142,6 @@ Los valores inválidos fallan de forma explícita al montar (p. ej. `maxAnchors 
 ![dsh-doc-anchor evaluación: la suite de pruebas real en este checkout — 59 pruebas pasan en extracción, runtime, superficie de herramientas y contrato del paquete, con las cinco pruebas de integración de pdftotext externo omitidas](docs/assets/dsh-doc-anchor-demo.gif)
 
 *Animado: la ejecución real de `pnpm test` en este checkout (reejecutada el 2026-11-21). Las cinco pruebas de integración de `pdftotext` externo se omiten porque ese binario no está instalado aquí; la ruta integrada es lo que cubre el resto de la suite.*
-
 
 - **59 pruebas / 6 archivos**: extracción (texto, markdown, HTML, LaTeX, PDF incl. FlateDecode, ToUnicode CMap, offsets multipágina, cifrado, límite de páginas, escaneos, offsets HTML cuando un documento empieza con una etiqueta de bloque), runtime (escapes de ruta, escape por symlink, límite de tamaño, persist=false, registros, borde de truncado por límite de anclas y validación, reanclaje sin conflicto de evidencia, offsets de locate insensibles a mayúsculas con Unicode), herramientas (esquemas, renders de éxito/fallo, locate/tables de extremo a extremo, entrada no soportada de `doc_tables`), contrato del paquete.
 - **Los fixtures PDF sintéticos** se construyen en las pruebas (`test/fixtures/make-pdf.ts`) — no se versiona ningún PDF con derechos de autor, y "corpus de PDF del mundo real" es un hueco explícito en lugar de un resultado declarado.
