@@ -22,7 +22,7 @@ jobs:
       - name: Install
         shell: bash
         run: |
-          if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile
+          if [ -f pnpm-lock.yaml ]; then pnpm install --no-frozen-lockfile
           elif [ -f package-lock.json ]; then npm ci
           else npm install --no-audit --no-fund
           fi
