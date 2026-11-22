@@ -7,6 +7,8 @@
 
 # dsh-doc-anchor
 
+当前版本 `0.2.9`。
+
 **Turn PDF / HTML / LaTeX / Markdown documents into locatable evidence surfaces for DeepSeek Harness.**
 
 *No reader, no renderer, no translation — just coordinates, immutable snapshots, and an evidence record anyone can re-check.*
