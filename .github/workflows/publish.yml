@@ -40,7 +40,7 @@ jobs:
       - name: Gate
         shell: bash
         run: |
-          pnpm run build --if-present
+          npm run build --if-present
           pnpm run typecheck
           pnpm test
       - name: Publish to npm
